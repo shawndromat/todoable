@@ -30,3 +30,7 @@ def stub_authentication(user, password)
     .with(basic_auth: [user, password])
     .to_return(status: 200, body: {token: 'my_token'}.to_json)
 end
+
+def auth_header
+  {headers: { 'Authorization' => 'Token token="my_token"'}}
+end

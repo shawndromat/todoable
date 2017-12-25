@@ -1,0 +1,19 @@
+{
+  "list": {
+    "name": "Urgent Things",
+    "items": [
+      {
+        "name": "Feed the cat",
+        "finished_at": null,
+        "src": "item1_url",
+        "id": "item1"
+      },
+      {
+        "name": "Get cat food",
+        "finished_at": null,
+        "src": "item2_url",
+        "id": "item2"
+      }
+    ]
+  }
+}
