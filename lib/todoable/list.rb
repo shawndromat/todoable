@@ -11,7 +11,7 @@ module Todoable
 
     def to_json
       {
-        create_list: {
+        list: {
           name: self.name
         }
       }.to_json

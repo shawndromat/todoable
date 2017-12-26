@@ -10,10 +10,14 @@ module Todoable
       @token ||= get_token
     end
 
+    def json_request(path, method, payload = nil)
+      JSON.parse(request(path, method, payload))
+    end
+
     def request(path, method, payload = nil)
       begin
         tries ||= 0
-        response = RestClient::Request.execute(
+        RestClient::Request.execute(
           url: URL + path,
           method: method,
           payload: payload,
@@ -23,8 +27,6 @@ module Todoable
             content_type: :json
           }
         )
-
-        JSON.parse(response)
       rescue RestClient::UnprocessableEntity => error
         raise_unprocessable(error)
       rescue RestClient::Unauthorized => error
@@ -35,6 +37,10 @@ module Todoable
         else
           raise_unauthorized(error)
         end
+      rescue RestClient::NotFound
+        raise Todoable::Error, 'Resource not found'
+      rescue RestClient::UnprocessableEntity => error
+        raise_unprocessable(error)
       end
     end
 
@@ -54,7 +60,7 @@ module Todoable
 
     def raise_unauthorized(error)
       if error.http_code == 401
-        raise 'Bad authentication data'
+        raise Todoable::Error, 'Bad authentication data'
       end
     end
 

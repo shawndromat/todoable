@@ -8,7 +8,7 @@ module Todoable
       include Todoable::Request
 
       def lists
-        request('/lists', :get)['lists'].map do |list_json|
+        json_request('/lists', :get)['lists'].map do |list_json|
           ListBuilder.new
             .set_name(list_json['name'])
             .set_id(list_json['id'])
@@ -18,23 +18,28 @@ module Todoable
       end
 
       def create_list(name)
-        new_list = List.new(name: name)
-        request('/lists', :post, new_list.to_json)
-        new_list
+        list_json = json_request('/lists', :post, {list: {name: name}}.to_json)['list']
+        List.new(name: list_json['name'], url: list_json['src'], id: list_json['id'])
       end
 
       def list(id)
-        list_json = request("/lists/#{id}", :get)['list']
+        list_json = json_request("/lists/#{id}", :get)['list']
 
         items = list_json['items'].map do |item_json|
           Item.new(name: item_json['name'], url: item_json['src'], id: item_json['id'], finished_at: item_json['finished_at'])
         end
 
-        ListBuilder.new
-          .set_name(list_json['name'])
-          .set_id(id)
-          .set_items(items)
-          .build
+        List.new(name: list_json['name'], id: id, items: items)
+      end
+
+      def update_list(id, name)
+        request("/lists/#{id}", :patch, {list: {name: name}}.to_json)
+        List.new(name: name, id: id)
+      end
+
+      def delete_list(id)
+        request("/lists/#{id}", :delete)
+        List.new(id: id)
       end
     end
   end

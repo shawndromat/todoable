@@ -12,32 +12,31 @@ RSpec.describe 'lists' do
     context 'when name is successfully saved' do
       before do
         stub_request(:post, /lists/).with(auth_header)
-          .to_return(status: 201, body: '{}')
+          .with(body: {list: {name: /.*/}})
+          .to_return(status: 201, body: {list: {name: name, src: 'url', id: 'list_id'}}.to_json)
       end
 
       it 'returns the saved list' do
         saved_list = todoable.create_list(name)
         expect(saved_list.name).to eq name
+        expect(saved_list.url).to eq 'url'
+        expect(saved_list.id).to eq 'list_id'
       end
     end
 
-    context 'when there is an error' do
+    context 'when there is a client error' do
       before do
         stub_request(:post, /lists/).with(auth_header)
           .to_return(status: 422, body: { name: ['has error', 'has another error']}.to_json)
       end
 
       it 'warns when repeat list added' do
-        expect{
-          todoable.create_list(name)
-          todoable.create_list(name)
-        }.to raise_error 'name has error, name has another error'
+        expect{todoable.create_list(name)}.to raise_error 'name has error, name has another error'
       end
     end
   end
 
   describe '#lists' do
-
     before do
       stub_request(:get, /lists/).with(auth_header)
         .to_return(status: 201, body: lists_body.to_json)
@@ -72,12 +71,12 @@ RSpec.describe 'lists' do
   end
 
   describe '#list' do
-    before do
-      stub_request(:get, /lists/).with(auth_header)
-        .to_return(status: 201, body: list_body)
-    end
-
     context 'when the list exists' do
+      before do
+        stub_request(:get, /lists/).with(auth_header)
+          .to_return(status: 201, body: list_body)
+      end
+
       let(:list_body) do
         File.new(File.expand_path('../fixtures/list.json', __FILE__))
       end
@@ -96,8 +95,84 @@ RSpec.describe 'lists' do
     end
 
     context 'when there is no list for the id' do
+      before do
+        stub_request(:get, /lists/).with(auth_header)
+          .to_return(status: 404)
+      end
+
+      it 'raises an error' do
+        expect{todoable.list('doesnt_exist')}.to raise_error 'Resource not found'
+      end
+    end
+  end
+
+  describe '#update_list' do
+    let(:id) {'12345'}
+    let(:name) { 'Updated list name' }
+
+    context 'when the list exists' do
+      before do
+        stub_request(:patch, /lists\/12345/).with(auth_header)
+          .with(body: {list: {name: name}})
+          .to_return(status: 201, body: {list: {name: name, src: 'url', id: id}}.to_json)
+      end
+
+      it 'returns the updated list' do
+        updated_list = todoable.update_list(id, name)
+        expect(updated_list.name).to eq('Updated list name')
+        expect(updated_list.id).to eq('12345')
+      end
+    end
+
+    context 'when there is a client error' do
+      before do
+        stub_request(:patch, /lists\/12345/).with(auth_header)
+          .with(body: {list: {name: name}})
+          .to_return(status: 422, body: { name: ['has error', 'has another error']}.to_json)
+      end
+
+      it 'raises an error' do
+        expect{todoable.update_list(id, name)}.to raise_error 'name has error, name has another error'
+      end
+    end
+
+    context 'when the list does not exist' do
+      before do
+        stub_request(:patch, /lists\/12345/).with(auth_header)
+          .with(body: {list: {name: name}})
+          .to_return(status: 404)
+      end
+      it 'raises a not found error' do
+        expect{todoable.update_list(id, name)}.to raise_error 'Resource not found'
+      end
+    end
+  end
+
+  describe '#delete_list' do
+    context 'when the list exists' do
+      before do
+        stub_request(:delete, /lists\/12345/).with(auth_header)
+          .to_return(status: 201, body: list_body)
+      end
+
       let(:list_body) do
         File.new(File.expand_path('../fixtures/list.json', __FILE__))
+      end
+
+      it 'returns the list and accompanying items' do
+        list = todoable.delete_list('12345')
+        expect(list.id).to eq('12345')
+      end
+    end
+
+    context 'when there is no list for the id' do
+      before do
+        stub_request(:delete, /lists\/doesnt_exist/).with(auth_header)
+          .to_return(status: 404)
+      end
+
+      it 'raises an error' do
+        expect{todoable.delete_list('doesnt_exist')}.to raise_error 'Resource not found'
       end
     end
   end
