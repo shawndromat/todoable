@@ -18,12 +18,12 @@ module Todoable
       end
 
       def create_list(name)
-        list_json = json_request('/lists', :post, {list: {name: name}}.to_json)['list']
+        list_json = json_request('/lists', :post, {list: {name: name}}.to_json)
         List.new(name: list_json['name'], url: list_json['src'], id: list_json['id'])
       end
 
       def list(id)
-        list_json = json_request("/lists/#{id}", :get)['list']
+        list_json = json_request("/lists/#{id}", :get)
 
         items = list_json['items'].map do |item_json|
           Item.new(name: item_json['name'], url: item_json['src'], id: item_json['id'], finished_at: item_json['finished_at'])

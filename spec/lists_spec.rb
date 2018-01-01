@@ -12,8 +12,8 @@ RSpec.describe 'lists' do
     context 'when name is successfully saved' do
       before do
         stub_request(:post, /lists/).with(auth_header)
-          .with(body: {list: {name: /.*/}})
-          .to_return(status: 201, body: {list: {name: name, src: 'url', id: 'list_id'}}.to_json)
+          .with(body: {list: {name: name}})
+          .to_return(status: 201, body: {name: name, src: 'url', id: 'list_id'}.to_json)
       end
 
       it 'returns the saved list' do
