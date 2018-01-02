@@ -152,11 +152,7 @@ RSpec.describe 'lists' do
     context 'when the list exists' do
       before do
         stub_request(:delete, /lists\/12345/).with(auth_header)
-          .to_return(status: 201, body: list_body)
-      end
-
-      let(:list_body) do
-        File.new(File.expand_path('../fixtures/list.json', __FILE__))
+          .to_return(status: 204)
       end
 
       it 'returns the list and accompanying items' do
