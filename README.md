@@ -38,7 +38,8 @@ todoable = Todoable::Client.new(user: user, password: password)
     * Lack of integrative testing (this assignment does reads and writes but we can't really test that interplay)
     * Requires hitting the real service at least once which, if writing, dirties up that environment
     * Can't get clean recordings unless you have ability to clear out the external service and record again
-    * A little unwieldy to get recorded error responses
+    * A little unwieldy to get recorded error responses, either your recording needs to perform many calls (e.g. create a list before you can delete it) or the real service needs to be in a particular state before you record
+    * If you need to change your test parameters a lot, it seems it might be painful to re-record
     * What the external service is actually doing is a bit opaque, you have to go look at the cassette files to see
     * A lot of recording and re-recording if you need to change the shape of a request/response
     * Recording can't happen in random order
