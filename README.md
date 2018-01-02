@@ -22,10 +22,12 @@ Or install it yourself as:
 
 ```ruby
 todoable = Todoable::Client.new(user: user, password: password)
-```
-
-## Notes and Learnings
+``` 
+## Notes on the gem design/API
 * I modeled the structure and API of my gem after the Twitter gem because it is a widely-used API wrapper that I have personally used recently and found simple and easy
+* I wanted to always return objects even though the API I'm wrapping doesn't always return json payloads that represent domain objects. This, in addition to the fact that the API doesn't always return the same fields for the same objects, means that I'm sometimes returning objects with missing fields. This feels a bit strange to do and in real life I'd hash out this detail through figuring out the use cases for this gem and its users
+
+## Notes and Learnings from the process
 * I started out trying VCR/cassettes due to the blog post about this assignment, but I ended switching to stub out my own requests. I found testing error cases easier to setup and easier to read this way
 * The API returns different shapes of list depending on the endpoint, for example some of the details (url, id) which are returned in the list index endpoint are missing from the list show endpoint. If the latter was a strict superset of the former, I probably could have written a nice '#from_json' method and called it a day. But instead, I used the builder pattern as it's a pattern I like to use when my params for an object don't all come at once and from the same place
 * Though I have tried cassettes before, this is the most I've played around with it. My thoughts thus far:
